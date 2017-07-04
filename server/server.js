@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+const {ObjectID} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose')
 var {Todo} =require('./models/todo');
@@ -28,6 +29,22 @@ app.get('/todos', (req, res) => {
     });
   }, (e) => {
     res.status(400).send(e);
+  });
+});
+
+app.get('/todos/:id', (req, res) => {
+  var id = req.params.id;
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+  Todo.findById(req.params.id).then((todo) => {
+    if (todo) {
+      res.send({todo}); // NOTE: This is to allow us to attach any additional response data down the line so that we do not need to modify the todo object
+    } else {
+      res.status(404).send();
+    }
+  }).catch((e) => {
+    res.status(400).send();
   });
 });
 
